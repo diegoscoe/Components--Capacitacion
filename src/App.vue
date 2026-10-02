@@ -10,6 +10,7 @@ import ButtonCounter from './components/ButtonCounter.vue';
   <ButtonCounter></ButtonCounter>
   <ButtonCounter></ButtonCounter>
   <ButtonCounter></ButtonCounter>
+  <ButtonCounter></ButtonCounter>
 </template>
 
 
