@@ -1,16 +1,18 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import BlogPost from './components/BlogPost.vue';
 import ButtonCounter from './components/ButtonCounter.vue';
 import PaginatePost from './components/PaginatePost.vue';
+import LoadingSpinner from './components/LoadingSpinner.vue';
 const posts = ref([])
 const favorito = ref("")
 const posXpage = 10
 const inicio = ref(0)
 const fin = ref(posXpage)
+const loading = ref(true);
 
 const cambiarFavorito = (title) => {
-  favorito.value=title
+  favorito.value = title
 }
 
 const next = () => {
@@ -24,34 +26,57 @@ const previus = () => {
   fin.value += - posXpage;
 }
 
-fetch('https://jsonplaceholder.typicode.com/posts')
-.then((res) => res.json())
-.then((data) => {posts.value = data} );
+/*onMounted(async () => {
+  loading.value = true;
+  try {
+    const res = await fetch('https://jsonplaceholder.typicode.com/posts')
+    posts.value = await res.json()
+  } catch (error) {
+    console.log(error)
+  } finally {
+    setTimeout(() => {
+          loading.value = false
+    }, 2000);
+  }
+})*/
 
-const maxLength = computed(() => posts.value.length )
+//fetch('https://jsonplaceholder.typicode.com/posts')
+//  .then((res) => res.json())
+//  .then((data) => { posts.value = data })
+//  .catch((e) => console.log(e))
+//  .finally(() => {
+//    setTimeout(() => {
+//      loading.value = false
+//    }, 3000);
+//  });
+
+const fetchData = async () => {
+  try {
+    const res = await fetch ('https://jsonplaceholder.typicode.com/posts');
+    posts.value = await res.json();
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setTimeout(() => {
+      loading.value = false;
+    }, 2000); 
+  }
+};
+
+fetchData();
+
+const maxLength = computed(() => posts.value.length)
 </script>
 
 <template>
-  <div class="container">
-  <h1>App</h1>
-  <h2>Mis Post favorito : {{ favorito }}</h2>
+  <LoadingSpinner v-if="loading" />
+  <div class="container" v-else>
+    <h1>App</h1>
+    <h2>Mis Post favorito : {{ favorito }}</h2>
 
-  <PaginatePost @next="next" 
-  @prev="previus" 
-  :inicio="inicio" 
-  :fin="fin" 
-  :maxLength="maxLength"
-  class="mb-2"/>
+    <PaginatePost @next="next" @prev="previus" :inicio="inicio" :fin="fin" :maxLength="maxLength" class="mb-2" />
 
-  <BlogPost 
-  v-for="post in posts.slice(inicio, fin)"
-  :key="post.id"
-  :title= "post.title" 
-  :id="post.id" 
-  :body="post.body" 
-  @cambiarFavoritoNombre="cambiarFavorito"
-  class="mb-2"></BlogPost>
+    <BlogPost v-for="post in posts.slice(inicio, fin)" :key="post.id" :title="post.title" :id="post.id"
+      :body="post.body" @cambiarFavoritoNombre="cambiarFavorito" class="mb-2"></BlogPost>
   </div>
 </template>
-
-
